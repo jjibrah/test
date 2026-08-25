@@ -45,6 +45,7 @@ button { border: 0; border-radius: 7px; background: var(--accent); color: white;
 button:disabled { opacity: .55; }
 .error-banner { background: #fee2e2; border: 1px solid #fecaca; color: #8b1a1a; padding: 12px; margin-bottom: 14px; }
 .success-message { color: var(--accent); font-size: 13px; }
+.form-error { color: #8b1a1a; font-size: 13px; }
 .empty-state { color: var(--muted); padding: 30px; text-align: center; }
 .detail-shell { max-width: 680px; }
 .detail-card { margin-top: 20px; }

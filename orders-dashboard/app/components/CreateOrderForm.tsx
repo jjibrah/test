@@ -7,11 +7,13 @@ import { Order } from "@/types/order";
 export function CreateOrderForm({ onCreated }: { onCreated: (order: Order) => void }) {
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSubmitting(true);
     setMessage("");
+    setError("");
     const formElement = event.currentTarget;
     const form = new FormData(formElement);
     try {
@@ -26,7 +28,7 @@ export function CreateOrderForm({ onCreated }: { onCreated: (order: Order) => vo
       onCreated(order);
       formElement.reset();
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Could not create order");
+      setError(error instanceof Error ? error.message : "Could not create order");
     } finally {
       setSubmitting(false);
     }
@@ -46,6 +48,7 @@ export function CreateOrderForm({ onCreated }: { onCreated: (order: Order) => vo
         </div>
         <button disabled={submitting}>{submitting ? "Saving..." : "Create order"}</button>
         {message && <p className="success-message">{message}</p>}
+        {error && <p className="form-error">{error}</p>}
       </form>
     </section>
   );

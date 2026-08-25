@@ -13,23 +13,27 @@ export default function Home() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<OrderSummary>({
     total_orders: 0,
     pending_orders: 0,
     completed_orders: 0,
     total_value: "0",
+    latest_created_at: null,
   });
   const [error, setError] = useState("");
 
   useEffect(() => {
     setError("");
+    setLoading(true);
     Promise.all([getOrders(page, PAGE_SIZE), getOrderSummary()])
       .then(([{ orders: pageOrders, total: orderCount }, orderSummary]) => {
         setOrders(pageOrders);
         setTotal(orderCount);
         setSummary(orderSummary);
       })
-      .catch(() => setError("Could not load orders"));
+      .catch(() => setError("Could not load orders"))
+      .finally(() => setLoading(false));
   }, [page]);
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -56,7 +60,7 @@ export default function Home() {
               <h2>Recent orders</h2>
             </div>
             <span className="muted">
-              Latest: {orders.length ? new Date(orders[0].created_at).toLocaleDateString() : "—"}
+              Latest: {summary.latest_created_at ? new Date(summary.latest_created_at).toLocaleDateString() : "—"}
             </span>
           </div>
           <OrdersTable orders={orders} />
@@ -64,15 +68,15 @@ export default function Home() {
             <button
               type="button"
               onClick={() => setPage((current) => current - 1)}
-              disabled={page === 1}
+              disabled={loading || page === 1}
             >
               Previous
             </button>
-            <span>Page {page} of {totalPages}</span>
+            <span>{loading ? "Loading…" : `Page ${page} of ${totalPages}`}</span>
             <button
               type="button"
               onClick={() => setPage((current) => current + 1)}
-              disabled={page >= totalPages}
+              disabled={loading || page >= totalPages}
             >
               Next
             </button>

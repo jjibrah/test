@@ -29,4 +29,5 @@ export interface OrderSummary {
   pending_orders: number;
   completed_orders: number;
   total_value: string;
+  latest_created_at: string | null;
 }

@@ -23,7 +23,7 @@ def list_orders(db: Session, skip: int = 0, limit: int = 100):
 
 
 def get_order_summary(db: Session):
-    total_orders, pending_orders, completed_orders, total_value = db.execute(
+    total_orders, pending_orders, completed_orders, total_value, latest_created_at = db.execute(
         select(
             func.count(models.Order.id),
             func.sum(
@@ -33,6 +33,7 @@ def get_order_summary(db: Session):
                 case((models.Order.status == models.OrderStatus.completed, 1), else_=0)
             ),
             func.sum(models.Order.quantity * models.Order.unit_price),
+            func.max(models.Order.created_at),
         )
     ).one()
 
@@ -41,6 +42,7 @@ def get_order_summary(db: Session):
         "pending_orders": pending_orders or 0,
         "completed_orders": completed_orders or 0,
         "total_value": total_value or 0,
+        "latest_created_at": latest_created_at,
     }
 
 

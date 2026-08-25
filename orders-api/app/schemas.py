@@ -45,3 +45,4 @@ class OrderSummaryResponse(BaseModel):
     pending_orders: int
     completed_orders: int
     total_value: Decimal
+    latest_created_at: datetime | None

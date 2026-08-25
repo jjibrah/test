@@ -8,14 +8,22 @@ import { Order, OrderStatus } from "@/types/order";
 export default function OrderDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [order, setOrder] = useState<Order | null>(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    getOrder(Number(id)).then(setOrder);
+    setError("");
+    getOrder(Number(id))
+      .then(setOrder)
+      .catch(() => setError("Could not load this order"));
   }, [id]);
 
   async function changeStatus(status: OrderStatus) {
     const updated = await updateOrderStatus(Number(id), status);
     setOrder(updated);
+  }
+
+  if (error) {
+    return <div className="detail-shell error-banner">{error}</div>;
   }
 
   if (!order) return <div className="detail-shell">Loading order...</div>;
