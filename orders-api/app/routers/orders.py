@@ -17,7 +17,7 @@ def list_orders(
     return {"orders": orders, "total": total}
 
 
-@router.get("/{order_id}", response_model=schemas.OrderListResponse)
+@router.get("/{order_id}", response_model=schemas.OrderResponse)
 def get_order(order_id: int, db: Session = Depends(get_db)):
     order = crud.get_order(db, order_id)
     if not order:
