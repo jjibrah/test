@@ -1,4 +1,5 @@
 from sqlalchemy import select, func
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from . import models, schemas
@@ -25,15 +26,18 @@ def list_orders(db: Session, skip: int = 0, limit: int = 100):
 def get_order(db: Session, order_id: int):
     return db.get(models.Order, order_id)
 
-
 def create_order(db: Session, order: schemas.OrderCreate):
-    values = order.model_dump()
-    values["unit_price"] = int(values["unit_price"])
-    db_order = models.Order(**values)
-    db.add(db_order)
-    db.commit()
-    db.refresh(db_order)
-    return db_order
+      values = order.model_dump()
+      db_order = models.Order(**values)
+      db.add(db_order)
+
+      try:
+          db.commit()
+          db.refresh(db_order)
+          return db_order
+      except IntegrityError:
+          db.rollback()
+          raise
 
 
 def update_order(db: Session, db_order: models.Order, order: schemas.OrderUpdate):
