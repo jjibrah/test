@@ -1,14 +1,25 @@
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
 from . import models, schemas
 
 
+
 def list_orders(db: Session, skip: int = 0, limit: int = 100):
-    statement = select(models.Order).order_by(models.Order.created_at.desc()).limit(limit + 1)
-    orders = list(db.scalars(statement).all())
-    total = len(orders)
-    return orders, total
+      total = db.scalar(
+          select(func.count()).select_from(models.Order)
+      ) or 0
+
+      statement = (
+          select(models.Order)
+          .order_by(models.Order.created_at.desc())
+          .offset(skip)
+          .limit(limit)
+      )
+
+      orders = list(db.scalars(statement).all())
+      return orders, total
+
 
 
 def get_order(db: Session, order_id: int):
