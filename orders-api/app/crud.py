@@ -40,14 +40,20 @@ def create_order(db: Session, order: schemas.OrderCreate):
           raise
 
 
-def update_order(db: Session, db_order: models.Order, order: schemas.OrderUpdate):
-    for field, value in order.model_dump().items():
-        setattr(db_order, field, value)
-    db.add(db_order)
-    db.commit()
-    db.refresh(db_order)
-    return db_order
 
+def update_order(
+      db: Session,
+      db_order: models.Order,
+      order: schemas.OrderUpdate,
+  ):
+      changes = order.model_dump(exclude_unset=True)
+
+      for field, value in changes.items():
+          setattr(db_order, field, value)
+
+      db.commit()
+      db.refresh(db_order)
+      return db_order
 
 async def delete_order(db: Session, db_order: models.Order):
     db.delete(db_order)
