@@ -46,4 +46,3 @@ def delete_order(order_id: int, db: Session = Depends(get_db)):
     if not db_order:
         raise HTTPException(status_code=404, detail="Order not found")
     crud.delete_order(db, db_order)
-    return {"message": "Order deleted"}

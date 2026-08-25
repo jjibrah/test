@@ -55,6 +55,6 @@ def update_order(
       db.refresh(db_order)
       return db_order
 
-async def delete_order(db: Session, db_order: models.Order):
+def delete_order(db: Session, db_order: models.Order):
     db.delete(db_order)
     db.commit()
