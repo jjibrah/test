@@ -1,10 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Order } from "@/types/order";
+import { deleteOrder, updateOrderStatus } from "@/lib/api";
+import { Order, OrderStatus } from "@/types/order";
 
-export function OrdersTable({ orders }: { orders: Order[] }) {
+export function OrdersTable({
+  orders,
+  onOrderChanged,
+}: {
+  orders: Order[];
+  onOrderChanged: () => Promise<void>;
+}) {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [modalError, setModalError] = useState("");
 
   useEffect(() => {
     if (!selectedOrder) return;
@@ -16,6 +25,35 @@ export function OrdersTable({ orders }: { orders: Order[] }) {
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
   }, [selectedOrder]);
+
+  async function changeStatus(status: OrderStatus) {
+    if (!selectedOrder) return;
+    setSaving(true);
+    setModalError("");
+    try {
+      const updated = await updateOrderStatus(selectedOrder.id, status);
+      setSelectedOrder(updated);
+      await onOrderChanged();
+    } catch (error) {
+      setModalError(error instanceof Error ? error.message : "Could not update order");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function removeOrder() {
+    if (!selectedOrder || !window.confirm(`Delete order #${selectedOrder.id}?`)) return;
+    setSaving(true);
+    setModalError("");
+    try {
+      await deleteOrder(selectedOrder.id);
+      setSelectedOrder(null);
+      await onOrderChanged();
+    } catch (error) {
+      setModalError(error instanceof Error ? error.message : "Could not delete order");
+      setSaving(false);
+    }
+  }
 
   if (orders.length === 0) {
     return <p className="empty-state">No orders have been created.</p>;
@@ -49,7 +87,10 @@ export function OrdersTable({ orders }: { orders: Order[] }) {
                 <button
                   type="button"
                   className="view-button"
-                  onClick={() => setSelectedOrder(order)}
+                  onClick={() => {
+                    setModalError("");
+                    setSelectedOrder(order);
+                  }}
                 >
                   View
                 </button>
@@ -95,10 +136,36 @@ export function OrdersTable({ orders }: { orders: Order[] }) {
               <div><dt>Total</dt><dd>${(Number(selectedOrder.unit_price) * selectedOrder.quantity).toFixed(2)}</dd></div>
               <div>
                 <dt>Status</dt>
-                <dd><span className={`status status-${selectedOrder.status}`}>{selectedOrder.status}</span></dd>
+                <dd>
+                  <select
+                    aria-label="Order status"
+                    value={selectedOrder.status}
+                    disabled={saving}
+                    onChange={(event) => changeStatus(event.target.value as OrderStatus)}
+                  >
+                    <option value="pending">Pending</option>
+                    <option value="processing">Processing</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                </dd>
               </div>
               <div><dt>Created</dt><dd>{new Date(selectedOrder.created_at).toLocaleString()}</dd></div>
             </dl>
+            {modalError && <p className="form-error">{modalError}</p>}
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="danger-button"
+                disabled={saving}
+                onClick={removeOrder}
+              >
+                {saving ? "Working…" : "Delete order"}
+              </button>
+              <button type="button" disabled={saving} onClick={() => setSelectedOrder(null)}>
+                Close
+              </button>
+            </div>
           </section>
         </div>
       )}

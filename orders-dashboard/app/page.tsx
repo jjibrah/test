@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { CreateOrderForm } from "./components/CreateOrderForm";
 import { OrdersTable } from "./components/OrdersTable";
 import { SummaryCards } from "./components/SummaryCards";
@@ -23,18 +23,35 @@ export default function Home() {
   });
   const [error, setError] = useState("");
 
-  useEffect(() => {
+  const loadDashboard = useCallback(async () => {
     setError("");
     setLoading(true);
-    Promise.all([getOrders(page, PAGE_SIZE), getOrderSummary()])
-      .then(([{ orders: pageOrders, total: orderCount }, orderSummary]) => {
-        setOrders(pageOrders);
-        setTotal(orderCount);
-        setSummary(orderSummary);
-      })
-      .catch(() => setError("Could not load orders"))
-      .finally(() => setLoading(false));
+    const [ordersResult, summaryResult] = await Promise.allSettled([
+      getOrders(page, PAGE_SIZE),
+      getOrderSummary(),
+    ]);
+
+    const errors: string[] = [];
+    if (ordersResult.status === "fulfilled") {
+      setOrders(ordersResult.value.orders);
+      setTotal(ordersResult.value.total);
+    } else {
+      errors.push(ordersResult.reason instanceof Error ? ordersResult.reason.message : "Could not load orders");
+    }
+
+    if (summaryResult.status === "fulfilled") {
+      setSummary(summaryResult.value);
+    } else {
+      errors.push(summaryResult.reason instanceof Error ? summaryResult.reason.message : "Could not load summary");
+    }
+
+    setError(errors.join(" "));
+    setLoading(false);
   }, [page]);
+
+  useEffect(() => {
+    loadDashboard();
+  }, [loadDashboard]);
 
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
@@ -46,6 +63,14 @@ export default function Home() {
     } else {
       setPage(1);
     }
+  }
+
+  async function handleOrderChanged() {
+    if (orders.length === 1 && page > 1) {
+      setPage((current) => current - 1);
+      return;
+    }
+    await loadDashboard();
   }
 
   return (
@@ -63,7 +88,7 @@ export default function Home() {
               Latest: {summary.latest_created_at ? new Date(summary.latest_created_at).toLocaleDateString() : "—"}
             </span>
           </div>
-          <OrdersTable orders={orders} />
+          <OrdersTable orders={orders} onOrderChanged={handleOrderChanged} />
           <nav className="pagination" aria-label="Orders pagination">
             <button
               type="button"
