@@ -1,7 +1,7 @@
 from datetime import datetime
 from decimal import Decimal
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 from .models import OrderStatus
 
@@ -25,6 +25,21 @@ class OrderUpdate(BaseModel):
     quantity: int | None = Field(default=None, ge=1, le=1000)
     unit_price: Decimal | None = Field(default=None, gt=0, decimal_places=2)
     status: OrderStatus | None = None
+
+    @field_validator(
+        "customer_name",
+        "customer_email",
+        "product_name",
+        "quantity",
+        "unit_price",
+        "status",
+        mode="before",
+    )
+    @classmethod
+    def reject_explicit_nulls(cls, value):
+        if value is None:
+            raise ValueError("Field cannot be null")
+        return value
 
 
 class OrderResponse(OrderBase):

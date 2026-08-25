@@ -40,6 +40,12 @@ def test_patch_only_changes_supplied_fields(client):
     assert response.json()["customer_name"] == "Sam Lee"
 
 
+def test_patch_rejects_explicit_null(client):
+    created = client.post("/orders", json=sample_order()).json()
+    response = client.patch(f"/orders/{created['id']}", json={"customer_name": None})
+    assert response.status_code == 422
+
+
 def test_missing_order_is_404(client):
     response = client.get("/orders/99999")
     assert response.status_code == 404
