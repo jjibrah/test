@@ -27,7 +27,7 @@ export default function OrderDetail({ params }: { params: Promise<{ id: string }
         <span className="eyebrow">Order #{order.id}</span>
         <h2>{order.product_name}</h2>
         <dl>
-          <div><dt>Customer</dt><dd>{order.customerName}</dd></div>
+          <div><dt>Customer</dt><dd>{order.customer_name}</dd></div>
           <div><dt>Email</dt><dd>{order.customer_email}</dd></div>
           <div><dt>Quantity</dt><dd>{order.quantity}</dd></div>
           <div><dt>Unit price</dt><dd>${Number(order.unit_price).toFixed(2)}</dd></div>

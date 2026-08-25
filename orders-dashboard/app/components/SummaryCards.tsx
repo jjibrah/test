@@ -2,7 +2,7 @@ import { Order } from "@/types/order";
 
 export function SummaryCards({ orders }: { orders: Order[] }) {
   const pending = orders.filter((order) => order.status === "pending").length;
-  const completed = orders.filter((order) => order.status === "complete").length;
+  const completed = orders.filter((order) => order.status === "completed").length;
   const totalValue = orders.reduce((total, order) => total + Number(order.unit_price), 0);
 
   const cards = [

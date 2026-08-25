@@ -13,7 +13,7 @@ def list_orders(db: Session, skip: int = 0, limit: int = 100):
 
       statement = (
           select(models.Order)
-          .order_by(models.Order.created_at.desc())
+          .order_by(models.Order.created_at.desc(), models.Order.id.desc())
           .offset(skip)
           .limit(limit)
       )
