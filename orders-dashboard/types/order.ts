@@ -23,3 +23,10 @@ export interface OrderListResponse {
   orders: Order[];
   total: number;
 }
+
+export interface OrderSummary {
+  total_orders: number;
+  pending_orders: number;
+  completed_orders: number;
+  total_value: string;
+}

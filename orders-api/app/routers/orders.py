@@ -17,6 +17,11 @@ def list_orders(
     return {"orders": orders, "total": total}
 
 
+@router.get("/summary", response_model=schemas.OrderSummaryResponse)
+def get_order_summary(db: Session = Depends(get_db)):
+    return crud.get_order_summary(db)
+
+
 @router.get("/{order_id}", response_model=schemas.OrderResponse)
 def get_order(order_id: int, db: Session = Depends(get_db)):
     order = crud.get_order(db, order_id)

@@ -1,15 +1,11 @@
-import { Order } from "@/types/order";
+import { OrderSummary } from "@/types/order";
 
-export function SummaryCards({ orders }: { orders: Order[] }) {
-  const pending = orders.filter((order) => order.status === "pending").length;
-  const completed = orders.filter((order) => order.status === "completed").length;
-  const totalValue = orders.reduce((total, order) => total + Number(order.unit_price), 0);
-
+export function SummaryCards({ summary }: { summary: OrderSummary }) {
   const cards = [
-    { label: "Total orders", value: orders.length.toString() },
-    { label: "Pending", value: pending.toString() },
-    { label: "Completed", value: completed.toString() },
-    { label: "Order value", value: `$${totalValue.toFixed(2)}` },
+    { label: "Total orders", value: summary.total_orders.toString() },
+    { label: "Pending", value: summary.pending_orders.toString() },
+    { label: "Completed", value: summary.completed_orders.toString() },
+    { label: "Order value", value: `$${Number(summary.total_value).toFixed(2)}` },
   ];
 
   return (

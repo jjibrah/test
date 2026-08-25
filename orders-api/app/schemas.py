@@ -38,3 +38,10 @@ class OrderResponse(OrderBase):
 class OrderListResponse(BaseModel):
     orders: list[OrderResponse]
     total: int
+
+
+class OrderSummaryResponse(BaseModel):
+    total_orders: int
+    pending_orders: int
+    completed_orders: int
+    total_value: Decimal

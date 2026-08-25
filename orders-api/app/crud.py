@@ -1,4 +1,4 @@
-from sqlalchemy import select, func
+from sqlalchemy import case, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -20,6 +20,28 @@ def list_orders(db: Session, skip: int = 0, limit: int = 100):
 
       orders = list(db.scalars(statement).all())
       return orders, total
+
+
+def get_order_summary(db: Session):
+    total_orders, pending_orders, completed_orders, total_value = db.execute(
+        select(
+            func.count(models.Order.id),
+            func.sum(
+                case((models.Order.status == models.OrderStatus.pending, 1), else_=0)
+            ),
+            func.sum(
+                case((models.Order.status == models.OrderStatus.completed, 1), else_=0)
+            ),
+            func.sum(models.Order.quantity * models.Order.unit_price),
+        )
+    ).one()
+
+    return {
+        "total_orders": total_orders or 0,
+        "pending_orders": pending_orders or 0,
+        "completed_orders": completed_orders or 0,
+        "total_value": total_value or 0,
+    }
 
 
 
