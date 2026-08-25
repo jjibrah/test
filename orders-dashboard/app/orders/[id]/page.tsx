@@ -8,14 +8,22 @@ import { Order, OrderStatus } from "@/types/order";
 export default function OrderDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [order, setOrder] = useState<Order | null>(null);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    getOrder(Number(id)).then(setOrder);
+    setError("");
+    getOrder(Number(id))
+      .then(setOrder)
+      .catch(() => setError("Could not load this order"));
   }, [id]);
 
   async function changeStatus(status: OrderStatus) {
     const updated = await updateOrderStatus(Number(id), status);
     setOrder(updated);
+  }
+
+  if (error) {
+    return <div className="detail-shell error-banner">{error}</div>;
   }
 
   if (!order) return <div className="detail-shell">Loading order...</div>;
@@ -27,7 +35,7 @@ export default function OrderDetail({ params }: { params: Promise<{ id: string }
         <span className="eyebrow">Order #{order.id}</span>
         <h2>{order.product_name}</h2>
         <dl>
-          <div><dt>Customer</dt><dd>{order.customerName}</dd></div>
+          <div><dt>Customer</dt><dd>{order.customer_name}</dd></div>
           <div><dt>Email</dt><dd>{order.customer_email}</dd></div>
           <div><dt>Quantity</dt><dd>{order.quantity}</dd></div>
           <div><dt>Unit price</dt><dd>${Number(order.unit_price).toFixed(2)}</dd></div>

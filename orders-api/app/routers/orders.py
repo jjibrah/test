@@ -17,7 +17,12 @@ def list_orders(
     return {"orders": orders, "total": total}
 
 
-@router.get("/{order_id}", response_model=schemas.OrderListResponse)
+@router.get("/summary", response_model=schemas.OrderSummaryResponse)
+def get_order_summary(db: Session = Depends(get_db)):
+    return crud.get_order_summary(db)
+
+
+@router.get("/{order_id}", response_model=schemas.OrderResponse)
 def get_order(order_id: int, db: Session = Depends(get_db)):
     order = crud.get_order(db, order_id)
     if not order:
@@ -46,4 +51,3 @@ def delete_order(order_id: int, db: Session = Depends(get_db)):
     if not db_order:
         raise HTTPException(status_code=404, detail="Order not found")
     crud.delete_order(db, db_order)
-    return {"message": "Order deleted"}
